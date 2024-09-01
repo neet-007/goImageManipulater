@@ -38,6 +38,7 @@ func main() {
 	defer file.Close()
 
 	ReadFile(file)
+
 }
 
 func check(e error) {
