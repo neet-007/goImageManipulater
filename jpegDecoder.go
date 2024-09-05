@@ -126,6 +126,11 @@ type Huffman struct {
 	elemnts []byte
 }
 
+type Stream struct {
+	data []int
+	pos  int
+}
+
 func NewHuffman() *Huffman {
 	return &Huffman{
 		root: make([]interface{}, 0),
@@ -153,7 +158,7 @@ func (hf *Huffman) bitsFromLength(root *[]interface{}, element byte, pos int) bo
 		if existing, ok := (*root)[i].([]interface{}); ok {
 			childRoot = existing
 		} else {
-			childRoot = make([]interface{}, 0)
+			continue
 		}
 
 		if hf.bitsFromLength(&childRoot, element, pos-1) {
@@ -170,9 +175,49 @@ func (hf *Huffman) getHuffmanBits(lengths []byte, elements []byte) {
 
 	ii := 0
 	for i := 0; i < len(lengths); i++ {
-		for _ = range lengths[i] {
+		for range lengths[i] {
 			hf.bitsFromLength(&hf.root, elements[ii], i)
 			ii++
 		}
 	}
+}
+
+func (hf *Huffman) find(st Stream) interface{} {
+	var r interface{}
+	r = hf.root
+
+	for {
+		if slice, ok := r.([]interface{}); ok {
+			r = slice[st.getBit()]
+		} else {
+			break
+		}
+	}
+
+	return r
+}
+
+func (hf *Huffman) getCode(st Stream) interface{} {
+	for {
+		res := hf.find(st)
+
+		if res != -1 {
+			return res
+		}
+	}
+}
+
+func (st *Stream) getBit() int {
+	b := st.data[st.pos>>3]
+	s := 7 - (st.pos & 0x7)
+	st.pos++
+	return (b >> s) & 1
+}
+
+func (st *Stream) getBitN(l int) int {
+	val := 0
+	for range l {
+		val = val*2 + st.getBit()
+	}
+	return val
 }
