@@ -1,1 +1,2 @@
 # Go Image Manipulator
+## Contributing
